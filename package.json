@@ -1,13 +1,27 @@
 {
-  "name": "vite-react-typescript-starter",
-  "private": true,
-  "version": "0.0.0",
-  "type": "module",
-  "scripts": {
-    "dev": "vite",
-    "build": "tsc -b && vite build",
-    "lint": "eslint .",
-    "preview": "vite preview"
+    "name": "todo",
+    "version": "0.1.0",
+    "private": true,
+    "scripts": {
+      "dev": "next dev",
+      "build": "next build",
+      "start": "next start",
+      "lint": "next lint"
+    },
+    "dependencies": {
+      "@notionhq/client": "^2.2.14",
+      "next": "^14.0.0",
+      "react": "^18.2.0",
+      "react-dom": "^18.2.0",
+      "dotenv": "^16.3.1"
+    },
+    "devDependencies": {
+      "@types/node": "^20.0.0",
+      "@types/react": "^18.2.0",
+      "@types/react-dom": "^18.2.0",
+      "typescript": "^5.0.0",
+      "eslint": "^8.0.0",
+      "eslint-config-next": "^14.0.0"
   },
   "dependencies": {
     "@hookform/resolvers": "^3.9.0",
