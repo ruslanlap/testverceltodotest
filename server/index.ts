@@ -70,5 +70,3 @@ app.use((err: any, req: any, res: any, next: any) => {
     error: process.env.NODE_ENV === 'development' ? err.message : 'Internal Server Error'
   });
 });
-
-export default app;
