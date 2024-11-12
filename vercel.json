@@ -23,8 +23,4 @@
       "dest": "dist/$1"
     }
   ],
-  "env": {
-    "NOTION_API_KEY": "@notion-api-key",
-    "NOTION_PAGE_ID": "@notion-page-id"
-  }
 }
