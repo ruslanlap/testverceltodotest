@@ -1,13 +1,20 @@
 {
   "version": 2,
+  "functions": {
+    "api/**/*.ts": {
+      "runtime": "nodejs18.x"
+    }
+  },
   "routes": [
     {
       "src": "/api/todos",
-      "dest": "/api/todos.ts"
+      "methods": ["GET", "POST", "OPTIONS"],
+      "dest": "/api/todos"
     },
     {
       "src": "/api/todos/(.*)",
-      "dest": "/api/todos.ts"
+      "methods": ["DELETE", "PATCH", "OPTIONS"],
+      "dest": "/api/todos"
     }
   ]
 }
