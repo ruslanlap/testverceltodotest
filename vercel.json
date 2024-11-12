@@ -1,15 +1,13 @@
 {
   "version": 2,
-  "buildCommand": "npm run build",
-  "outputDirectory": "dist",
-  "rewrites": [
-    { 
-      "source": "/api/:path*", 
-      "destination": "/api/:path*" 
+  "routes": [
+    {
+      "src": "/api/todos",
+      "dest": "/api/todos.ts"
     },
-    { 
-      "source": "/(.*)", 
-      "destination": "/$1" 
+    {
+      "src": "/api/todos/(.*)",
+      "dest": "/api/todos.ts"
     }
   ]
 }
