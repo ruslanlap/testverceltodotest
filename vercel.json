@@ -7,7 +7,11 @@
     },
     {
       "src": "package.json",
-      "use": "@vercel/next"
+      "use": "@vercel/static-build",
+      "config": {
+        "distDir": "dist",
+        "buildCommand": "npm run build"
+      }
     }
   ],
   "routes": [
@@ -16,14 +20,16 @@
       "dest": "/server/index.ts"
     },
     {
-      "handle": "filesystem"
+      "src": "/assets/(.*)",
+      "dest": "/dist/assets/$1"
+    },
+    {
+      "src": "/favicon.ico",
+      "dest": "/dist/favicon.ico"
     },
     {
       "src": "/(.*)",
-      "dest": "/"
+      "dest": "/dist/index.html"
     }
-  ],
-  "env": {
-    "NODE_ENV": "production"
-  }
+  ]
 }
