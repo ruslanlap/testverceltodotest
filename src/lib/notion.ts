@@ -2,7 +2,7 @@ const API_BASE =
 
   process.env.NODE_ENV === "production"
 
-    ? "https://todovercel-git-master-ruslantodo.vercel.app/api/todos"
+    ? "https://todovercel-zeta.vercel.app/api/todos"
 
     : "/api/todos";
 
