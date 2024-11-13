@@ -1,26 +1,11 @@
-const NOTION_API_KEY = import.meta.env.VITE_NOTION_API_KEY;
-const YOUR_PAGE_ID = import.meta.env.VITE_YOUR_PAGE_ID;
+      // src/lib/notion.ts
+      const NOTION_API_KEY = import.meta.env.VITE_NOTION_API_KEY;
+      const YOUR_PAGE_ID = import.meta.env.VITE_YOUR_PAGE_ID;
 
-const NOTION_API_URL = import.meta.env.PROD 
-  ? 'https://doit-tau.vercel.app/api/notion'
-  : '/api/notion';
+      const NOTION_API_URL = import.meta.env.PROD 
+        ? 'https://doit-tau.vercel.app/api/notion'
+        : '/api/notion';
 
-const headers = {
-  'Authorization': `Bearer ${NOTION_API_KEY}`,
-  'Notion-Version': '2022-06-28',
-  'Content-Type': 'application/json',
-};
-
-export const notionApi = {
-  async fetchTodos() {
-    try {
-      const response = await fetch(`${NOTION_API_URL}/blocks/${YOUR_PAGE_ID}/children`, {
-        method: 'GET',
-        headers,
-        credentials: 'same-origin',
-      });
-      console.log('API URL:', NOTION_API_URL);
-      console.log('Page ID:', YOUR_PAGE_ID);
       interface NotionBlock {
         id: string;
         type: string;
@@ -44,6 +29,9 @@ export const notionApi = {
       export const notionApi = {
         async fetchTodos() {
           try {
+            console.log('API URL:', NOTION_API_URL);
+            console.log('Page ID:', YOUR_PAGE_ID);
+
             const response = await fetch(`${NOTION_API_URL}/blocks/${YOUR_PAGE_ID}/children`, {
               method: 'GET',
               headers,
@@ -170,4 +158,4 @@ export const notionApi = {
             throw error;
           }
         },
-      }
+      };
