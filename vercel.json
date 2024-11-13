@@ -1,20 +1,15 @@
+// vercel.json
 {
   "version": 2,
-  "functions": {
-    "api/**/*.ts": {
-      "runtime": "vercel-node@18.0.0"
-    }
-  },
   "routes": [
     {
-      "src": "/api/todos",
-      "methods": ["GET", "POST", "OPTIONS"],
-      "dest": "/api/todos"
-    },
-    {
-      "src": "/api/todos/(.*)",
-      "methods": ["DELETE", "PATCH", "OPTIONS"],
-      "dest": "/api/todos/$1"
+      "src": "/api/notion/blocks/.*",
+      "methods": ["GET", "POST", "PATCH", "DELETE", "OPTIONS"],
+      "headers": {
+        "Access-Control-Allow-Origin": "*",
+        "Access-Control-Allow-Methods": "GET, POST, PATCH, DELETE, OPTIONS",
+        "Access-Control-Allow-Headers": "Content-Type, Authorization, Notion-Version"
+      }
     }
   ]
 }
