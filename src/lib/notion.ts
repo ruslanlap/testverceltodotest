@@ -41,6 +41,7 @@ export const notionApi = {
       console.log('Fetched data:', data);
 
       return data.results
+        .filter((block: NotionBlock) => block.type === 'to_do')
         .filter(block => block.type === 'to_do')
         .map(block => ({
           id: block.id,
