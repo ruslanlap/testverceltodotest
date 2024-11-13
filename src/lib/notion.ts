@@ -3,7 +3,7 @@ export const getApiConfig = () => {
   const env = process.env.NODE_ENV;
   const config = {
     production: {
-      baseUrl: 'https://todovercel-git-master-ruslantodo.vercel.app/api/todos'
+      baseUrl: 'https://todovercel-zeta.vercel.app/api/todos'
     },
     development: {
       baseUrl: '/api/todos'
