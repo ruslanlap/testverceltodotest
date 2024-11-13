@@ -14,13 +14,7 @@
     {
       "src": "/api/todos/(.*)",
       "methods": ["DELETE", "PATCH", "OPTIONS"],
-      "dest": "/api/todos"
+      "dest": "/api/todos/$1"
     }
   ]
 }
-
-
-
-###not found
-
-git push make
