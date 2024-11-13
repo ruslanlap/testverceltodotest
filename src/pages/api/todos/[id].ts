@@ -1,4 +1,4 @@
-/ src/pages/api/todos/[id].ts
+// src/pages/api/todos/[id].ts
 import type { NextApiRequest, NextApiResponse } from 'next';
 import { Client } from '@notionhq/client';
 import { Todo, ApiResponse } from '../../../types';
@@ -36,7 +36,7 @@ export default async function handler(
       const response = await notion.blocks.update({
         block_id: id,
         to_do: {
-          checked: completed !== undefined ? completed : (block as ToDoBlockObjectResponse).to_do.checked,
+          checked: completed !== undefined ? completed : block.to_do.checked,
           rich_text: title ? [
             {
               type: 'text',
@@ -44,7 +44,7 @@ export default async function handler(
                 content: title,
               },
             },
-          ] : (block as ToDoBlockObjectResponse).to_do.rich_text,
+          ] : block.to_do.rich_text,
         },
       });
 

@@ -9,12 +9,8 @@ const notion = new Client({
 
 const PAGE_ID = process.env.NOTION_PAGE_ID;
 
-function isFullBlock(block: PartialBlockObjectResponse | BlockObjectResponse): block is BlockObjectResponse {
-  return 'type' in block;
-}
-
-function isToDoBlock(block: BlockObjectResponse): block is ToDoBlockObjectResponse {
-  return block.type === 'to_do';
+function isToDoBlock(block: any): boolean {
+  return block && 'type' in block && block.type === 'to_do';
 }
 
 export default async function handler(
@@ -28,13 +24,12 @@ export default async function handler(
       });
 
       const todos: Todo[] = response.results
-        .filter(isFullBlock)
         .filter(isToDoBlock)
         .map(block => ({
           id: block.id,
           text: block.to_do.rich_text[0]?.text.content || '',
           completed: block.to_do.checked,
-          createdAt: new Date(block.created_time).getTime()
+          createdAt: Date.now() // Using current timestamp instead of block.created_time
         }));
 
       return res.status(200).json({ success: true, data: todos });
@@ -62,7 +57,7 @@ export default async function handler(
 
       const newBlock = response.results[0];
 
-      if (!isFullBlock(newBlock) || !isToDoBlock(newBlock)) {
+      if (!isToDoBlock(newBlock)) {
         throw new Error('Failed to create todo block');
       }
 
@@ -70,7 +65,7 @@ export default async function handler(
         id: newBlock.id,
         text,
         completed: false,
-        createdAt: new Date(newBlock.created_time).getTime()
+        createdAt: Date.now()
       };
 
       return res.status(201).json({ success: true, data: newTodo });

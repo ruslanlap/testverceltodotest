@@ -1,9 +1,5 @@
 // src/types.ts
-import { 
-  BlockObjectResponse,
-  PartialBlockObjectResponse,
-  ToDoBlockObjectResponse
-} from '@notionhq/client/build/src/api-endpoints';
+import type { Client } from '@notionhq/client';
 
 export interface Todo {
   id: string;
