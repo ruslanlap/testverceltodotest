@@ -1,7 +1,7 @@
 {
   "version": 2,
   "functions": {
-    "pages/api/**/*.ts": {
+    "src/api/**/*.ts": {   // Update according to your actual directory structure
       "memory": 1024,
       "maxDuration": 10
     }
