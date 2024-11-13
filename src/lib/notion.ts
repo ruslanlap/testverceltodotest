@@ -1,99 +1,151 @@
-//src/lib/notion.ts
-export const getApiConfig = () => {
-  const env = process.env.NODE_ENV;
-  const config = {
-    production: {
-      baseUrl: 'https://todovercel-zeta.vercel.app/api/todos'
-    },
-    development: {
-      baseUrl: '/api/todos'
-    }
-  };
+const NOTION_API_KEY = import.meta.env.VITE_NOTION_API_KEY;
+const YOUR_PAGE_ID = import.meta.env.VITE_YOUR_PAGE_ID;
+const NOTION_API_URL = '/api/notion';
 
-  return config[env as keyof typeof config] || config.development;
+interface NotionBlock {
+  id: string;
+  type: string;
+  to_do: {
+    rich_text: Array<{ text: { content: string } }>;
+    checked: boolean;
+  };
+  created_time: string;
+}
+
+interface NotionBlockResponse {
+  results: NotionBlock[];
+}
+
+const headers = {
+  'Authorization': `Bearer ${NOTION_API_KEY}`,
+  'Notion-Version': '2022-06-28',
+  'Content-Type': 'application/json',
+  'Access-Control-Allow-Origin': '*',
 };
 
-// types.ts
-export interface Todo {
-  id: string;
-  text: string;
-  completed: boolean;
-  createdAt: number;
-}
+export const notionApi = {
+  async fetchTodos() {
+    try {
+      const response = await fetch(`${NOTION_API_URL}/blocks/${YOUR_PAGE_ID}/children`, {
+        method: 'GET',
+        headers,
+        mode: 'cors'
+      });
 
-export interface ApiResponse<T> {
-  success: boolean;
-  data: T;
-  error?: string;
-}
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.message || 'Failed to fetch todos');
+      }
 
-// api.ts
-import { getApiConfig } from './config';
-import type { Todo, ApiResponse } from './types';
+      const data: NotionBlockResponse = await response.json();
+      console.log('Fetched data:', data);
 
-class TodoApi {
-  private baseUrl: string;
-
-  constructor() {
-    this.baseUrl = getApiConfig().baseUrl;
-  }
-
-  private async handleResponse<T>(response: Response): Promise<T> {
-    if (!response.ok) {
-      const errorText = await response.text();
-      console.error("API Error:", errorText);
-      throw new Error(`HTTP error! status: ${response.status}`);
+      return data.results
+        .filter(block => block.type === 'to_do')
+        .map(block => ({
+          id: block.id,
+          text: block.to_do.rich_text[0]?.text?.content || '',
+          completed: block.to_do.checked || false,
+          createdAt: new Date(block.created_time).getTime(),
+        }));
+    } catch (error) {
+      console.error('Error fetching todos:', error);
+      throw error;
     }
-    return response.json();
-  }
+  },
 
-  private async fetchWithConfig(
-    endpoint: string, 
-    config: RequestInit
-  ): Promise<Response> {
-    const url = `${this.baseUrl}${endpoint}`;
-    return fetch(url, {
-      ...config,
-      headers: {
-        "Content-Type": "application/json",
-        ...config.headers,
-      },
-    });
-  }
+  async createTodo(text: string) {
+    try {
+      const response = await fetch(`${NOTION_API_URL}/blocks/${YOUR_PAGE_ID}/children`, {
+        method: 'PATCH',
+        headers,
+        mode: 'cors',
+        body: JSON.stringify({
+          children: [{
+            object: 'block',
+            type: 'to_do',
+            to_do: {
+              rich_text: [{ 
+                type: 'text',
+                text: { content: text }
+              }],
+              checked: false
+            }
+          }]
+        }),
+      });
 
-  async fetchTodos(): Promise<Todo[]> {
-    const response = await this.fetchWithConfig("", { method: "GET" });
-    const data = await this.handleResponse<ApiResponse<Todo[]>>(response);
-    return data.data;
-  }
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.message || 'Failed to create todo');
+      }
 
-  async createTodo(text: string): Promise<Todo> {
-    const response = await this.fetchWithConfig("", {
-      method: "POST",
-      body: JSON.stringify({ text }),
-    });
-    return this.handleResponse<Todo>(response);
-  }
+      const data = await response.json();
+      const newBlock = data.results[0];
 
-  async updateTodo(
-    id: string,
-    data: Partial<Pick<Todo, "text" | "completed">>
-  ): Promise<boolean> {
-    const response = await this.fetchWithConfig(`/${id}`, {
-      method: "PATCH",
-      body: JSON.stringify(data),
-    });
-    const result = await this.handleResponse<ApiResponse<null>>(response);
-    return result.success;
-  }
+      return {
+        id: newBlock.id,
+        text,
+        completed: false,
+        createdAt: new Date(newBlock.created_time).getTime(),
+      };
+    } catch (error) {
+      console.error('Error creating todo:', error);
+      throw error;
+    }
+  },
 
-  async deleteTodo(id: string): Promise<boolean> {
-    const response = await this.fetchWithConfig(`/${id}`, {
-      method: "DELETE",
-    });
-    const result = await this.handleResponse<ApiResponse<null>>(response);
-    return result.success;
-  }
-}
+  async updateTodo(id: string, { text, completed }: { text?: string; completed?: boolean }) {
+    try {
+      const updateData: any = {
+        to_do: {}
+      };
 
-export const todoApi = new TodoApi();
+      if (text !== undefined) {
+        updateData.to_do.rich_text = [{
+          type: 'text',
+          text: { content: text }
+        }];
+      }
+
+      if (completed !== undefined) {
+        updateData.to_do.checked = completed;
+      }
+
+      const response = await fetch(`${NOTION_API_URL}/blocks/${id}`, {
+        method: 'PATCH',
+        headers,
+        mode: 'cors',
+        body: JSON.stringify(updateData),
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.message || 'Failed to update todo');
+      }
+      return true;
+    } catch (error) {
+      console.error('Error updating todo:', error);
+      throw error;
+    }
+  },
+
+  async deleteTodo(id: string) {
+    try {
+      const response = await fetch(`${NOTION_API_URL}/blocks/${id}`, {
+        method: 'DELETE',
+        headers,
+        mode: 'cors',
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.message || 'Failed to delete todo');
+      }
+      return true;
+    } catch (error) {
+      console.error('Error deleting todo:', error);
+      throw error;
+    }
+  },
+};
