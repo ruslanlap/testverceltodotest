@@ -1,9 +1,9 @@
 {
-  "version": 2,
+  "version": 3,
   "functions": {
-    "src/api/**/*.ts": {   // Update according to your actual directory structure
-      "memory": 1024,
-      "maxDuration": 10
+    "src/api/**/*.ts": {
+      "memory": 512,
+      "maxDuration": 15
     }
   }
 }
