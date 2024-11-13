@@ -1,49 +1,62 @@
-// pages/api/notion/blocks/[...path].ts
-import type { NextApiRequest, NextApiResponse } from 'next';
+import { VercelRequest, VercelResponse } from '@vercel/node';
 
 const NOTION_API_BASE = 'https://api.notion.com/v1';
+const NOTION_API_KEY = process.env.VITE_NOTION_API_KEY;
 
-export default async function handler(req: NextApiRequest, res: NextApiResponse) {
+export default async function handler(req: VercelRequest, res: VercelResponse) {
+  // Налаштування CORS
+  res.setHeader('Access-Control-Allow-Origin', '*');
+  res.setHeader('Access-Control-Allow-Methods', 'GET, POST, PATCH, DELETE, OPTIONS');
+  res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization, Notion-Version');
+
+  // Обробка OPTIONS запиту
+  if (req.method === 'OPTIONS') {
+    return res.status(200).end();
+  }
+
   try {
-    // Отримуємо API ключ з env
-    const NOTION_API_KEY = process.env.VITE_NOTION_API_KEY;
     if (!NOTION_API_KEY) {
-      throw new Error('NOTION_API_KEY is not defined');
+      throw new Error('NOTION_API_KEY is not configured');
     }
 
-    // Отримуємо шлях і параметри
-    const pathSegments = req.query.path || [];
-    const path = Array.isArray(pathSegments) ? pathSegments.join('/') : pathSegments;
+    // Отримуємо параметри з URL
+    const { path } = req.query;
+    const pathArray = Array.isArray(path) ? path : [path];
+    const fullPath = pathArray.join('/');
 
     // Формуємо URL для Notion API
-    const notionUrl = `${NOTION_API_BASE}/blocks/${path}`;
+    const notionUrl = `${NOTION_API_BASE}/blocks/${fullPath}`;
 
-    // Налаштовуємо headers для запиту до Notion
+    console.log('Notion API request:', {
+      method: req.method,
+      url: notionUrl,
+      body: req.body
+    });
+
+    // Налаштовуємо headers для Notion API
     const notionHeaders = {
       'Authorization': `Bearer ${NOTION_API_KEY}`,
       'Notion-Version': '2022-06-28',
       'Content-Type': 'application/json',
     };
 
-    // Налаштовуємо CORS
-    res.setHeader('Access-Control-Allow-Origin', '*');
-    res.setHeader('Access-Control-Allow-Methods', 'GET, POST, PATCH, DELETE, OPTIONS');
-    res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization, Notion-Version');
-
-    // Обробляємо OPTIONS запит для CORS
-    if (req.method === 'OPTIONS') {
-      return res.status(200).end();
-    }
-
     // Виконуємо запит до Notion API
     const notionResponse = await fetch(notionUrl, {
       method: req.method,
       headers: notionHeaders,
-      body: ['POST', 'PATCH'].includes(req.method || '') ? JSON.stringify(req.body) : undefined,
+      body: ['POST', 'PATCH'].includes(req.method || '') 
+        ? JSON.stringify(req.body) 
+        : undefined,
     });
 
     // Отримуємо відповідь
     const data = await notionResponse.json();
+
+    // Логуємо відповідь для налагодження
+    console.log('Notion API response:', {
+      status: notionResponse.status,
+      data: data
+    });
 
     // Відправляємо відповідь клієнту
     return res.status(notionResponse.status).json(data);

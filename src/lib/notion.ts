@@ -1,6 +1,19 @@
 const NOTION_API_KEY = import.meta.env.VITE_NOTION_API_KEY;
 const YOUR_PAGE_ID = import.meta.env.VITE_YOUR_PAGE_ID;
-const NOTION_API_URL = '/api/notion';
+// const NOTION_API_URL = '/api/notion';
+
+const NOTION_API_URL = import.meta.env.PROD 
+  ? '/api/notion'  // для production
+  : '/api/notion'; // для розробки
+
+console.log('API URL:', NOTION_API_URL);
+console.log('Page ID:', YOUR_PAGE_ID);
+
+export const notionApi = {
+  async fetchTodos() {
+    try {
+      const url = `${NOTION_API_URL}/blocks/${YOUR_PAGE_ID}/children`;
+      console.log('Fetching todos from:', url);
 
 interface NotionBlock {
   id: string;
