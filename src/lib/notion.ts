@@ -1,67 +1,174 @@
-import { VercelRequest, VercelResponse } from '@vercel/node';
+      const NOTION_API_KEY = import.meta.env.VITE_NOTION_API_KEY;
+      const YOUR_PAGE_ID = import.meta.env.VITE_YOUR_PAGE_ID;
 
-const NOTION_API_BASE = 'https://api.notion.com/v1';
-const NOTION_API_KEY = process.env.VITE_NOTION_API_KEY;
+const NOTION_API_URL = import.meta.env.PROD 
+  ? 'https://doit-tau.vercel.app/api/notion'
+  : '/api/notion';
 
-export default async function handler(req: VercelRequest, res: VercelResponse) {
-  // Налаштування CORS
-  res.setHeader('Access-Control-Allow-Origin', 'https://doit-tau.vercel.app');
-  res.setHeader('Access-Control-Allow-Methods', 'GET, POST, PATCH, DELETE, OPTIONS');
-  res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization, Notion-Version');
-  res.setHeader('Access-Control-Allow-Credentials', 'true');
+const headers = {
+  'Authorization': `Bearer ${NOTION_API_KEY}`,
+  'Notion-Version': '2022-06-28',
+  'Content-Type': 'application/json',
+};
 
-  // Відповідаємо на preflight запити
-  if (req.method === 'OPTIONS') {
-    return res.status(200).end();
-  }
+      export const notionApi = {
+        async fetchTodos() {
+          try {
+            const response = await fetch(`${NOTION_API_URL}/blocks/${YOUR_PAGE_ID}/children`, {
+              method: 'GET',
+              headers,
+              credentials: 'same-origin',
+            });
+      console.log('API URL:', NOTION_API_URL);
+      console.log('Page ID:', YOUR_PAGE_ID);
 
-  try {
-    if (!NOTION_API_KEY) {
-      console.error('NOTION_API_KEY is missing');
-      return res.status(500).json({ error: 'API key not configured' });
-    }
+      interface NotionBlock {
+        id: string;
+        type: string;
+        to_do: {
+          rich_text: Array<{ text: { content: string } }>;
+          checked: boolean;
+        };
+        created_time: string;
+      }
 
-    // Отримуємо шлях з URL
-    const pathSegments = req.query.path || [];
-    const path = Array.isArray(pathSegments) ? pathSegments.join('/') : pathSegments;
-    const notionUrl = `${NOTION_API_BASE}/blocks/${path}`;
+      interface NotionBlockResponse {
+        results: NotionBlock[];
+      }
 
-    // Логуємо запит
-    console.log('Notion API request:', {
-      method: req.method,
-      url: notionUrl,
-    });
-
-    // Виконуємо запит до Notion API
-    const notionResponse = await fetch(notionUrl, {
-      method: req.method,
-      headers: {
+      const headers = {
         'Authorization': `Bearer ${NOTION_API_KEY}`,
         'Notion-Version': '2022-06-28',
         'Content-Type': 'application/json',
-      },
-      body: ['POST', 'PATCH'].includes(req.method || '') 
-        ? JSON.stringify(req.body) 
-        : undefined,
-    });
+      };
 
-    // Отримуємо відповідь
-    const data = await notionResponse.json();
+      export const notionApi = {
+        async fetchTodos() {
+          try {
+            const response = await fetch(`${NOTION_API_URL}/blocks/${YOUR_PAGE_ID}/children`, {
+              method: 'GET',
+              headers,
+              credentials: 'include'
+            });
 
-    // Логуємо відповідь
-    console.log('Notion API response:', {
-      status: notionResponse.status,
-      data: data
-    });
+            if (!response.ok) {
+              const errorText = await response.text();
+              console.error('API Error response:', errorText);
+              throw new Error(`Failed to fetch todos: ${response.status}`);
+            }
 
-    // Відправляємо відповідь клієнту
-    return res.status(notionResponse.status).json(data);
+            const data: NotionBlockResponse = await response.json();
+            console.log('Fetched data:', data);
 
-  } catch (error) {
-    console.error('Error in API handler:', error);
-    return res.status(500).json({ 
-      error: 'Internal server error',
-      message: error instanceof Error ? error.message : 'Unknown error'
-    });
-  }
-}
+            return data.results
+              .filter((block: NotionBlock) => block.type === 'to_do')
+              .map(block => ({
+                id: block.id,
+                text: block.to_do.rich_text[0]?.text?.content || '',
+                completed: block.to_do.checked || false,
+                createdAt: new Date(block.created_time).getTime(),
+              }));
+          } catch (error) {
+            console.error('Error in fetchTodos:', error);
+            throw error;
+          }
+        },
+
+        async createTodo(text: string) {
+          try {
+            const response = await fetch(`${NOTION_API_URL}/blocks/${YOUR_PAGE_ID}/children`, {
+              method: 'PATCH',
+              headers,
+              credentials: 'include', // Додано
+              body: JSON.stringify({
+                children: [{
+                  object: 'block',
+                  type: 'to_do',
+                  to_do: {
+                    rich_text: [{ 
+                      type: 'text',
+                      text: { content: text }
+                    }],
+                    checked: false
+                  }
+                }]
+              }),
+            });
+
+            if (!response.ok) {
+              const errorText = await response.text();
+              console.error('API Error response:', errorText);
+              throw new Error(`Failed to create todo: ${response.status}`);
+            }
+
+            const data = await response.json();
+            const newBlock = data.results[0];
+
+            return {
+              id: newBlock.id,
+              text,
+              completed: false,
+              createdAt: new Date(newBlock.created_time).getTime(),
+            };
+          } catch (error) {
+            console.error('Error creating todo:', error);
+            throw error;
+          }
+        },
+
+        async updateTodo(id: string, { text, completed }: { text?: string; completed?: boolean }) {
+          try {
+            const updateData: any = {
+              to_do: {}
+            };
+
+            if (text !== undefined) {
+              updateData.to_do.rich_text = [{
+                type: 'text',
+                text: { content: text }
+              }];
+            }
+
+            if (completed !== undefined) {
+              updateData.to_do.checked = completed;
+            }
+
+            const response = await fetch(`${NOTION_API_URL}/blocks/${id}`, {
+              method: 'PATCH',
+              headers,
+              credentials: 'include', // Додано
+              body: JSON.stringify(updateData),
+            });
+
+            if (!response.ok) {
+              const errorText = await response.text();
+              console.error('API Error response:', errorText);
+              throw new Error(`Failed to update todo: ${response.status}`);
+            }
+            return true;
+          } catch (error) {
+            console.error('Error updating todo:', error);
+            throw error;
+          }
+        },
+
+        async deleteTodo(id: string) {
+          try {
+            const response = await fetch(`${NOTION_API_URL}/blocks/${id}`, {
+              method: 'DELETE',
+              headers,
+              credentials: 'include', // Додано
+            });
+
+            if (!response.ok) {
+              const errorText = await response.text();
+              console.error('API Error response:', errorText);
+              throw new Error(`Failed to delete todo: ${response.status}`);
+            }
+            return true;
+          } catch (error) {
+            console.error('Error deleting todo:', error);
+            throw error;
+          }
+        },
+      };
