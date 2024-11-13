@@ -11,17 +11,16 @@ const headers = {
   'Content-Type': 'application/json',
 };
 
-      export const notionApi = {
-        async fetchTodos() {
-          try {
-            const response = await fetch(`${NOTION_API_URL}/blocks/${YOUR_PAGE_ID}/children`, {
-              method: 'GET',
-              headers,
-              credentials: 'same-origin',
-            });
+export const notionApi = {
+  async fetchTodos() {
+    try {
+      const response = await fetch(`${NOTION_API_URL}/blocks/${YOUR_PAGE_ID}/children`, {
+        method: 'GET',
+        headers,
+        credentials: 'same-origin',
+      });
       console.log('API URL:', NOTION_API_URL);
       console.log('Page ID:', YOUR_PAGE_ID);
-
       interface NotionBlock {
         id: string;
         type: string;
@@ -79,7 +78,7 @@ const headers = {
             const response = await fetch(`${NOTION_API_URL}/blocks/${YOUR_PAGE_ID}/children`, {
               method: 'PATCH',
               headers,
-              credentials: 'include', // Додано
+              credentials: 'include',
               body: JSON.stringify({
                 children: [{
                   object: 'block',
@@ -136,7 +135,7 @@ const headers = {
             const response = await fetch(`${NOTION_API_URL}/blocks/${id}`, {
               method: 'PATCH',
               headers,
-              credentials: 'include', // Додано
+              credentials: 'include',
               body: JSON.stringify(updateData),
             });
 
@@ -157,7 +156,7 @@ const headers = {
             const response = await fetch(`${NOTION_API_URL}/blocks/${id}`, {
               method: 'DELETE',
               headers,
-              credentials: 'include', // Додано
+              credentials: 'include',
             });
 
             if (!response.ok) {
