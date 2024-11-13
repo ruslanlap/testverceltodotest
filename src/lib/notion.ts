@@ -1,10 +1,8 @@
-const API_BASE =
-
-  process.env.NODE_ENV === "production"
-
+const API_BASE = process.env.API_BASE_URL ||
+  (process.env.NODE_ENV === "production"
     ? "https://todovercel-git-master-ruslantodo.vercel.app/api/todos"
+    : "/api/todos");
 
-    : "/api/todos";
 
 export interface Todo {
 
