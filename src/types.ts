@@ -1,5 +1,5 @@
 // src/types.ts
-import type { Client } from '@notionhq/client';
+// import type { Client } from '@notionhq/client';
 
 export interface Todo {
   id: string;
