@@ -1,13 +1,21 @@
 // src/pages/api/todos/index.ts
 import type { NextApiRequest, NextApiResponse } from 'next';
 import { Client } from '@notionhq/client';
-import { Todo, ApiResponse, NotionTodoBlock } from '../../../types';
+import { Todo, ApiResponse } from '../../../types';
 
 const notion = new Client({
   auth: process.env.NOTION_TOKEN,
 });
 
 const PAGE_ID = process.env.NOTION_PAGE_ID;
+
+function isFullBlock(block: PartialBlockObjectResponse | BlockObjectResponse): block is BlockObjectResponse {
+  return 'type' in block;
+}
+
+function isToDoBlock(block: BlockObjectResponse): block is ToDoBlockObjectResponse {
+  return block.type === 'to_do';
+}
 
 export default async function handler(
   req: NextApiRequest,
@@ -20,9 +28,8 @@ export default async function handler(
       });
 
       const todos: Todo[] = response.results
-        .filter((block): block is NotionTodoBlock => 
-          'type' in block && block.type === 'to_do'
-        )
+        .filter(isFullBlock)
+        .filter(isToDoBlock)
         .map(block => ({
           id: block.id,
           text: block.to_do.rich_text[0]?.text.content || '',
@@ -53,7 +60,11 @@ export default async function handler(
         ],
       });
 
-      const newBlock = response.results[0] as NotionTodoBlock;
+      const newBlock = response.results[0];
+
+      if (!isFullBlock(newBlock) || !isToDoBlock(newBlock)) {
+        throw new Error('Failed to create todo block');
+      }
 
       const newTodo: Todo = {
         id: newBlock.id,
