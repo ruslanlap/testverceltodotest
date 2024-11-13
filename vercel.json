@@ -1,9 +1,9 @@
-// vercel.json
 {
   "version": 2,
   "routes": [
     {
-      "src": "/api/notion/blocks/.*",
+      "src": "/api/notion/blocks/(.*)",
+      "dest": "/api/notion/blocks/[...path]",
       "methods": ["GET", "POST", "PATCH", "DELETE", "OPTIONS"],
       "headers": {
         "Access-Control-Allow-Origin": "*",
@@ -11,5 +11,11 @@
         "Access-Control-Allow-Headers": "Content-Type, Authorization, Notion-Version"
       }
     }
-  ]
+  ],
+  "functions": {
+    "api/**/*.ts": {
+      "memory": 1024,
+      "maxDuration": 10
+    }
+  }
 }
