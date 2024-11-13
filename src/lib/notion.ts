@@ -1,4 +1,4 @@
-// config.ts
+//src/lib/notion.ts
 export const getApiConfig = () => {
   const env = process.env.NODE_ENV;
   const config = {
