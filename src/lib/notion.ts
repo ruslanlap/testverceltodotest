@@ -1,149 +1,99 @@
-const API_BASE = process.env.API_BASE_URL ||
-  (process.env.NODE_ENV === "production"
-    ? "https://todovercel-git-master-ruslantodo.vercel.app/api/todos"
-    : "/api/todos");
+// config.ts
+export const getApiConfig = () => {
+  const env = process.env.NODE_ENV;
+  const config = {
+    production: {
+      baseUrl: 'https://todovercel-git-master-ruslantodo.vercel.app/api/todos'
+    },
+    development: {
+      baseUrl: '/api/todos'
+    }
+  };
 
+  return config[env as keyof typeof config] || config.development;
+};
 
+// types.ts
 export interface Todo {
-
   id: string;
-
   text: string;
-
   completed: boolean;
-
   createdAt: number;
-
 }
 
-export const notionApi = {
+export interface ApiResponse<T> {
+  success: boolean;
+  data: T;
+  error?: string;
+}
+
+// api.ts
+import { getApiConfig } from './config';
+import type { Todo, ApiResponse } from './types';
+
+class TodoApi {
+  private baseUrl: string;
+
+  constructor() {
+    this.baseUrl = getApiConfig().baseUrl;
+  }
+
+  private async handleResponse<T>(response: Response): Promise<T> {
+    if (!response.ok) {
+      const errorText = await response.text();
+      console.error("API Error:", errorText);
+      throw new Error(`HTTP error! status: ${response.status}`);
+    }
+    return response.json();
+  }
+
+  private async fetchWithConfig(
+    endpoint: string, 
+    config: RequestInit
+  ): Promise<Response> {
+    const url = `${this.baseUrl}${endpoint}`;
+    return fetch(url, {
+      ...config,
+      headers: {
+        "Content-Type": "application/json",
+        ...config.headers,
+      },
+    });
+  }
 
   async fetchTodos(): Promise<Todo[]> {
-
-    const response = await fetch(API_BASE, {
-
-      method: 'GET',
-
-      headers: {
-
-        "Content-Type": "application/json",
-
-      },
-
-    });
-
-    if (!response.ok) {
-
-      const errorText = await response.text();
-
-      console.error("API Error:", errorText);
-
-      throw new Error(`HTTP error! status: ${response.status}`);
-
-    }
-
-    const data = await response.json();
-
-    return data.todos;
-
-  },
+    const response = await this.fetchWithConfig("", { method: "GET" });
+    const data = await this.handleResponse<ApiResponse<Todo[]>>(response);
+    return data.data;
+  }
 
   async createTodo(text: string): Promise<Todo> {
-
-    const response = await fetch(API_BASE, {
-
+    const response = await this.fetchWithConfig("", {
       method: "POST",
-
-      headers: {
-
-        "Content-Type": "application/json",
-
-      },
-
       body: JSON.stringify({ text }),
-
     });
-
-    if (!response.ok) {
-
-      const errorText = await response.text();
-
-      console.error("API Error:", errorText);
-
-      throw new Error(`HTTP error! status: ${response.status}`);
-
-    }
-
-    return response.json();
-
-  },
+    return this.handleResponse<Todo>(response);
+  }
 
   async updateTodo(
-
     id: string,
-
-    data: { text?: string; completed?: boolean },
-
+    data: Partial<Pick<Todo, "text" | "completed">>
   ): Promise<boolean> {
-
-    const response = await fetch(`${API_BASE}/${id}`, {
-
+    const response = await this.fetchWithConfig(`/${id}`, {
       method: "PATCH",
-
-      headers: {
-
-        "Content-Type": "application/json",
-
-      },
-
       body: JSON.stringify(data),
-
     });
-
-    if (!response.ok) {
-
-      const errorText = await response.text();
-
-      console.error("API Error:", errorText);
-
-      throw new Error(`HTTP error! status: ${response.status}`);
-
-    }
-
-    const result = await response.json();
-
+    const result = await this.handleResponse<ApiResponse<null>>(response);
     return result.success;
-
-  },
+  }
 
   async deleteTodo(id: string): Promise<boolean> {
-
-    const response = await fetch(`${API_BASE}/${id}`, {
-
+    const response = await this.fetchWithConfig(`/${id}`, {
       method: "DELETE",
-
-      headers: {
-
-        "Content-Type": "application/json",
-
-      },
-
     });
-
-    if (!response.ok) {
-
-      const errorText = await response.text();
-
-      console.error("API Error:", errorText);
-
-      throw new Error(`HTTP error! status: ${response.status}`);
-
-    }
-
-    const result = await response.json();
-
+    const result = await this.handleResponse<ApiResponse<null>>(response);
     return result.success;
+  }
+}
 
-  },
-
-};
+export const todoApi = new TodoApi();

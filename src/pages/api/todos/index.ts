@@ -1,53 +1,33 @@
 import type { NextApiRequest, NextApiResponse } from 'next';
-
-import { notionApi } from '@/lib/notion';
+import { Todo } from '../../../types';
 
 export default async function handler(
-
   req: NextApiRequest,
-
   res: NextApiResponse
-
 ) {
-
-  try {
-
-    switch (req.method) {
-
-      case 'GET':
-
-        const todos = await notionApi.fetchTodos();
-
-        return res.status(200).json({ todos });
-
-      case 'POST':
-
-        const { text } = req.body;
-
-        if (!text) {
-
-          return res.status(400).json({ error: 'Text is required' });
-
-        }
-
-        const newTodo = await notionApi.createTodo(text);
-
-        return res.status(201).json(newTodo);
-
-      default:
-
-        res.setHeader('Allow', ['GET', 'POST']);
-
-        return res.status(405).end(`Method ${req.method} Not Allowed`);
-
+  if (req.method === 'GET') {
+    try {
+      // Тут ваша логіка отримання todos
+      const todos: Todo[] = []; // Замініть на реальну логіку
+      return res.status(200).json({ todos });
+    } catch (error) {
+      return res.status(500).json({ error: 'Failed to fetch todos' });
     }
-
-  } catch (error) {
-
-    console.error('API Error:', error);
-
-    return res.status(500).json({ error: 'Internal Server Error' });
-
   }
 
+  if (req.method === 'POST') {
+    try {
+      const { text } = req.body;
+      // Тут ваша логіка створення todo
+      const newTodo: Todo = {
+        id: Date.now().toString(),
+        text,
+        completed: false,
+        createdAt: Date.now()
+      };
+      return res.status(201).json(newTodo);
+    } catch (error) {
+      return res.status(500).json({ error: 'Failed to create todo' });
+    }
+  }
 }
