@@ -1,26 +1,37 @@
 {
+
   "version": 2,
-  "functions": {
-    "api/**/*.ts": {
-      "runtime": "nodejs18.x"
+
+  "builds": [
+
+    {
+
+      "src": "src/pages/api/**/*.ts",
+
+      "use": "@vercel/node"
+
     }
-  },
+
+  ],
+
   "routes": [
+
     {
+
       "src": "/api/todos",
-      "methods": ["GET", "POST", "OPTIONS"],
-      "dest": "/api/todos"
+
+      "dest": "src/pages/api/todos/index.ts"
+
     },
+
     {
+
       "src": "/api/todos/(.*)",
-      "methods": ["DELETE", "PATCH", "OPTIONS"],
-      "dest": "/api/todos"
+
+      "dest": "src/pages/api/todos/[id].ts"
+
     }
+
   ]
+
 }
-
-
-
-###not found
-
-git push make
