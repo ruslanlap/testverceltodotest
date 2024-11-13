@@ -1,3 +1,4 @@
+// api/notion/blocks/[...path].ts
 import { VercelRequest, VercelResponse } from '@vercel/node';
 
 const NOTION_API_BASE = 'https://api.notion.com/v1';
@@ -5,42 +6,48 @@ const NOTION_API_KEY = process.env.VITE_NOTION_API_KEY;
 
 export default async function handler(req: VercelRequest, res: VercelResponse) {
   // Налаштування CORS
-  res.setHeader('Access-Control-Allow-Origin', '*');
-  res.setHeader('Access-Control-Allow-Methods', 'GET, POST, PATCH, DELETE, OPTIONS');
-  res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization, Notion-Version');
+  res.setHeader('Access-Control-Allow-Credentials', 'true');
+  res.setHeader('Access-Control-Allow-Origin', 'https://doit-tau.vercel.app');
+  res.setHeader(
+    'Access-Control-Allow-Methods',
+    'GET, POST, PUT, DELETE, OPTIONS, PATCH'
+  );
+  res.setHeader(
+    'Access-Control-Allow-Headers',
+    'X-CSRF-Token, X-Requested-With, Accept, Accept-Version, Content-Length, Content-MD5, Content-Type, Date, X-Api-Version, Authorization, Notion-Version'
+  );
 
   // Обробка OPTIONS запиту
   if (req.method === 'OPTIONS') {
-    return res.status(200).end();
+    res.status(200).end();
+    return;
   }
 
   try {
+    // Перевірка API ключа
     if (!NOTION_API_KEY) {
-      throw new Error('NOTION_API_KEY is not configured');
+      console.error('NOTION_API_KEY is not configured');
+      return res.status(500).json({ error: 'API key not configured' });
     }
 
-    // Отримуємо параметри з URL
-    const { path } = req.query;
-    const pathArray = Array.isArray(path) ? path : [path];
-    const fullPath = pathArray.join('/');
+    // Отримання шляху
+    const pathSegments = req.query.path || [];
+    const path = Array.isArray(pathSegments) ? pathSegments.join('/') : pathSegments;
+    const notionUrl = `${NOTION_API_BASE}/blocks/${path}`;
 
-    // Формуємо URL для Notion API
-    const notionUrl = `${NOTION_API_BASE}/blocks/${fullPath}`;
-
-    console.log('Notion API request:', {
-      method: req.method,
+    console.log('Making request to Notion:', {
       url: notionUrl,
-      body: req.body
+      method: req.method,
     });
 
-    // Налаштовуємо headers для Notion API
+    // Налаштування запиту до Notion
     const notionHeaders = {
       'Authorization': `Bearer ${NOTION_API_KEY}`,
       'Notion-Version': '2022-06-28',
       'Content-Type': 'application/json',
     };
 
-    // Виконуємо запит до Notion API
+    // Виконання запиту
     const notionResponse = await fetch(notionUrl, {
       method: req.method,
       headers: notionHeaders,
@@ -49,23 +56,28 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
         : undefined,
     });
 
-    // Отримуємо відповідь
+    // Перевірка статусу відповіді
+    if (!notionResponse.ok) {
+      const errorData = await notionResponse.text();
+      console.error('Notion API error:', {
+        status: notionResponse.status,
+        error: errorData
+      });
+      return res.status(notionResponse.status).json({
+        error: 'Notion API error',
+        details: errorData
+      });
+    }
+
+    // Парсинг та відправка відповіді
     const data = await notionResponse.json();
-
-    // Логуємо відповідь для налагодження
-    console.log('Notion API response:', {
-      status: notionResponse.status,
-      data: data
-    });
-
-    // Відправляємо відповідь клієнту
-    return res.status(notionResponse.status).json(data);
+    return res.status(200).json(data);
 
   } catch (error) {
-    console.error('Error in Notion API:', error);
-    return res.status(500).json({ 
-      error: 'Internal Server Error',
-      message: error instanceof Error ? error.message : 'Unknown error'
+    console.error('Server error:', error);
+    return res.status(500).json({
+      error: 'Internal server error',
+      message: error instanceof Error ? error.message : 'Unknown error',
     });
   }
 }
