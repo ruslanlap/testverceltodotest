@@ -1,65 +1,43 @@
-      // src/lib/notion.ts
-      const NOTION_API_KEY = import.meta.env.VITE_NOTION_API_KEY;
-      const YOUR_PAGE_ID = import.meta.env.VITE_YOUR_PAGE_ID;
+        // src/lib/notion.ts
+        const NOTION_API_URL = import.meta.env.PROD 
+          ? '/api/notion'  // Changed to relative path
+          : '/api/notion';
 
-      const NOTION_API_URL = import.meta.env.PROD 
-        ? 'https://doit-tau.vercel.app/api/notion'
-        : '/api/notion';
-
-      interface NotionBlock {
-        id: string;
-        type: string;
-        to_do: {
-          rich_text: Array<{ text: { content: string } }>;
-          checked: boolean;
+        const headers = {
+          'Content-Type': 'application/json',
         };
-        created_time: string;
-      }
 
-      interface NotionBlockResponse {
-        results: NotionBlock[];
-      }
+        export const notionApi = {
+          async fetchTodos() {
+            try {
+              const response = await fetch(`${NOTION_API_URL}/blocks/${import.meta.env.VITE_NOTION_PAGE_ID}/children`, {
+                method: 'GET',
+                headers,
+                credentials: 'include'
+              });
 
-      const headers = {
-        'Authorization': `Bearer ${NOTION_API_KEY}`,
-        'Notion-Version': '2022-06-28',
-        'Content-Type': 'application/json',
-      };
+              if (!response.ok) {
+                const errorText = await response.text();
+                console.error('API Error response:', errorText);
+                throw new Error(`Failed to fetch todos: ${response.status}`);
+              }
 
-      export const notionApi = {
-        async fetchTodos() {
-          try {
-            console.log('API URL:', NOTION_API_URL);
-            console.log('Page ID:', YOUR_PAGE_ID);
+              const data = await response.json();
+              console.log('Fetched data:', data);
 
-            const response = await fetch(`${NOTION_API_URL}/blocks/${YOUR_PAGE_ID}/children`, {
-              method: 'GET',
-              headers,
-              credentials: 'include'
-            });
-
-            if (!response.ok) {
-              const errorText = await response.text();
-              console.error('API Error response:', errorText);
-              throw new Error(`Failed to fetch todos: ${response.status}`);
+              return data.results
+                .filter(block => block.type === 'to_do')
+                .map(block => ({
+                  id: block.id,
+                  text: block.to_do.rich_text[0]?.text?.content || '',
+                  completed: block.to_do.checked || false,
+                  createdAt: new Date(block.created_time).getTime(),
+                }));
+            } catch (error) {
+              console.error('Error in fetchTodos:', error);
+              throw error;
             }
-
-            const data: NotionBlockResponse = await response.json();
-            console.log('Fetched data:', data);
-
-            return data.results
-              .filter((block: NotionBlock) => block.type === 'to_do')
-              .map(block => ({
-                id: block.id,
-                text: block.to_do.rich_text[0]?.text?.content || '',
-                completed: block.to_do.checked || false,
-                createdAt: new Date(block.created_time).getTime(),
-              }));
-          } catch (error) {
-            console.error('Error in fetchTodos:', error);
-            throw error;
-          }
-        },
+          },
 
         async createTodo(text: string) {
           try {
