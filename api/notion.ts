@@ -1,3 +1,4 @@
+// api/notion.ts
 import { Client } from '@notionhq/client';
 import type { NextApiRequest, NextApiResponse } from 'next';
 import { GetPageResponse } from '@notionhq/client/build/src/api-endpoints';
