@@ -1,19 +1,16 @@
 {
-
   "version": 2,
-
-  "routes": [
-
+  "builds": [
     {
-
-      "src": "/api/notion",
-
-      "methods": ["GET", "POST", "PATCH", "DELETE"],
-
-      "dest": "/api/notion.ts"
-
+      "src": "api/server.js",
+      "use": "@vercel/node"
     }
-
   ],
-
+  "routes": [
+    {
+      "src": "/api/(.*)",
+      "methods": ["GET", "POST", "PATCH", "DELETE"],
+      "dest": "api/notion.ts"
+    }
+  ]
 }
