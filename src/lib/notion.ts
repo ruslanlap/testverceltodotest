@@ -1,5 +1,9 @@
 // src/lib/notion.ts
 const NOTION_API_URL = '/api/notion';
+const pageId = process.env.NEXT_PUBLIC_NOTION_PAGE_ID;
+if (!pageId) {
+  throw new Error('NEXT_PUBLIC_NOTION_PAGE_ID is not configured');
+}
 
 interface NotionBlock {
   id: string;
