@@ -1,16 +1,8 @@
 // src/lib/notion.ts
+// Використовуємо абсолютний URL для продакшену
 const NOTION_API_URL = import.meta.env.PROD 
-  ? '/api/notion'
+  ? 'https://doit-tau.vercel.app/api/notion'  // Ваш Vercel домен
   : '/api/notion';
-
-// Get page ID from environment variable
-const NOTION_PAGE_ID = import.meta.env.VITE_NOTION_PAGE_ID;
-
-// Type for environment variables
-interface ImportMetaEnv {
-  VITE_NOTION_PAGE_ID: string;
-  PROD: boolean;
-}
 
 interface NotionBlock {
   id: string;
@@ -30,19 +22,11 @@ const headers = {
   'Content-Type': 'application/json',
 };
 
-// Helper function to validate page ID
-const getPageId = () => {
-  if (!NOTION_PAGE_ID) {
-    throw new Error('NOTION_PAGE_ID environment variable is not set');
-  }
-  return NOTION_PAGE_ID;
-};
-
 export const notionApi = {
   async fetchTodos() {
     try {
-      const pageId = getPageId();
-      console.log('Using page ID:', pageId); // Debug log
+      const pageId = import.meta.env.VITE_NOTION_PAGE_ID;
+      console.log('Using page ID:', pageId); // Debugging
 
       const response = await fetch(`${NOTION_API_URL}/blocks/${pageId}/children`, {
         method: 'GET',
@@ -75,7 +59,7 @@ export const notionApi = {
 
   async createTodo(text: string) {
     try {
-      const pageId = getPageId();
+      const pageId = import.meta.env.VITE_NOTION_PAGE_ID;
 
       const response = await fetch(`${NOTION_API_URL}/blocks/${pageId}/children`, {
         method: 'PATCH',

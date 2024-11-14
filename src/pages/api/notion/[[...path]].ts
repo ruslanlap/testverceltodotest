@@ -2,32 +2,26 @@
 import { NextApiRequest, NextApiResponse } from 'next';
 
 const NOTION_API_BASE_URL = 'https://api.notion.com/v1';
-const NOTION_API_KEY = process.env.NOTION_API_KEY;
+const NOTION_API_KEY = process.env.VITE_NOTION_API_KEY;
 
-async function handleNotionRequest(req: NextApiRequest, res: NextApiResponse) {
+export default async function handler(req: NextApiRequest, res: NextApiResponse) {
   // Set CORS headers
   res.setHeader('Access-Control-Allow-Origin', 'https://doit-tau.vercel.app');
   res.setHeader('Access-Control-Allow-Methods', 'GET, POST, PATCH, DELETE, OPTIONS');
   res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization, Notion-Version');
   res.setHeader('Access-Control-Allow-Credentials', 'true');
 
-  // Handle preflight requests
   if (req.method === 'OPTIONS') {
     res.status(200).end();
     return;
   }
 
   try {
-    // Extract the path parameters
     const pathSegments = req.query.path || [];
     const apiPath = Array.isArray(pathSegments) ? pathSegments.join('/') : pathSegments;
+    console.log('API Path:', apiPath); // Debugging
 
-    // Construct the full Notion API URL
-    const notionUrl = `${NOTION_API_BASE_URL}/${apiPath}`;
-    console.log('Calling Notion API:', notionUrl);
-
-    // Forward the request to Notion API
-    const notionResponse = await fetch(notionUrl, {
+    const notionResponse = await fetch(`${NOTION_API_BASE_URL}/${apiPath}`, {
       method: req.method,
       headers: {
         'Authorization': `Bearer ${NOTION_API_KEY}`,
@@ -37,26 +31,21 @@ async function handleNotionRequest(req: NextApiRequest, res: NextApiResponse) {
       body: req.method !== 'GET' ? JSON.stringify(req.body) : undefined,
     });
 
-    // Log the response status
-    console.log('Notion API response status:', notionResponse.status);
+    console.log('Notion Response Status:', notionResponse.status); // Debugging
 
-    // If the response is not ok, log the error
     if (!notionResponse.ok) {
-      const errorData = await notionResponse.text();
-      console.error('Notion API error:', errorData);
-      res.status(notionResponse.status).json({ error: errorData });
+      const errorText = await notionResponse.text();
+      console.error('Notion API Error:', errorText);
+      res.status(notionResponse.status).json({ error: errorText });
       return;
     }
 
-    // Get the response data
     const data = await (notionResponse.status === 204 ? Promise.resolve(null) : notionResponse.json());
 
-    // Send the response
-    res.status(notionResponse.status);
     if (data) {
-      res.json(data);
+      res.status(notionResponse.status).json(data);
     } else {
-      res.end();
+      res.status(notionResponse.status).end();
     }
   } catch (error: unknown) {
     console.error('API Handler Error:', error);
@@ -66,8 +55,6 @@ async function handleNotionRequest(req: NextApiRequest, res: NextApiResponse) {
     });
   }
 }
-
-export default handleNotionRequest;
 
 export const config = {
   api: {
