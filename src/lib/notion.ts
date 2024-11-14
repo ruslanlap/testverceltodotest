@@ -9,11 +9,9 @@ const NOTION_API_KEY = process.env.NOTION_API_KEY;
 const headers = {
   'Content-Type': 'application/json',
   'Authorization': `Bearer ${NOTION_API_KEY}`,
-  'Notion-Version': '2022-06-28',
-  'Access-Control-Allow-Origin': '*',
-  'Access-Control-Allow-Methods': 'GET,OPTIONS,PATCH,DELETE,POST,PUT',
-  'Access-Control-Allow-Headers': 'X-CSRF-Token, X-Requested-With, Accept, Accept-Version, Content-Length, Content-MD5, Content-Type, Date, X-Api-Version, Authorization, Notion-Version'
+  'Notion-Version': '2022-06-28'
 };
+
 
 interface NotionBlock {
   id: string;
