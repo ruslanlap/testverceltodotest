@@ -1,6 +1,6 @@
 import { Client } from '@notionhq/client';
 import type { NextApiRequest, NextApiResponse } from 'next';
-import { CreatePageResponse, GetPageResponse } from '@notionhq/client/build/src/api-endpoints';
+import { GetPageResponse } from '@notionhq/client/build/src/api-endpoints';
 
 const notion = new Client({ auth: process.env.NOTION_API_KEY });
 
@@ -58,7 +58,6 @@ async function handleDelete(
 ) {
   const { pageId } = req.query;
   try {
-    // Note: Using update with archived: true instead of delete since delete isn't available
     await notion.pages.update({
       page_id: pageId as string,
       archived: true
