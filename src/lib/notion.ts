@@ -14,6 +14,9 @@ interface NotionBlock {
 
   to_do: {
 
+
+    
+
     rich_text: Array<{ text: { content: string } }>;
 
     checked: boolean;
