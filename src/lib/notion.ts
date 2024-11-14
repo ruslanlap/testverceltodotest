@@ -1,5 +1,4 @@
 // src/lib/notion.ts
-// Використовуємо абсолютний URL для продакшену
 const NOTION_API_URL = '/api/notion';
 
 interface NotionBlock {
@@ -23,9 +22,7 @@ const headers = {
 export const notionApi = {
   async fetchTodos() {
     try {
-      const pageId = import.meta.env.VITE_NOTION_PAGE_ID;
-      console.log('Using page ID:', pageId); // Debugging
-
+      const pageId = process.env.NEXT_PUBLIC_NOTION_PAGE_ID;
       const response = await fetch(`${NOTION_API_URL}/blocks/${pageId}/children`, {
         method: 'GET',
         headers,
@@ -34,16 +31,13 @@ export const notionApi = {
 
       if (!response.ok) {
         const errorText = await response.text();
-        console.error('API Error response:', errorText);
-        throw new Error(`Failed to fetch todos: ${response.status}`);
+        throw new Error(`Failed to fetch todos: ${errorText}`);
       }
 
       const data: NotionBlockResponse = await response.json();
-      console.log('Fetched data:', data);
-
       return data.results
-        .filter((block: NotionBlock) => block.type === 'to_do')
-        .map((block: NotionBlock) => ({
+        .filter(block => block.type === 'to_do')
+        .map(block => ({
           id: block.id,
           text: block.to_do.rich_text[0]?.text?.content || '',
           completed: block.to_do.checked || false,
@@ -57,8 +51,7 @@ export const notionApi = {
 
   async createTodo(text: string) {
     try {
-      const pageId = import.meta.env.VITE_NOTION_PAGE_ID;
-
+      const pageId = process.env.NEXT_PUBLIC_NOTION_PAGE_ID;
       const response = await fetch(`${NOTION_API_URL}/blocks/${pageId}/children`, {
         method: 'PATCH',
         headers,
@@ -80,8 +73,7 @@ export const notionApi = {
 
       if (!response.ok) {
         const errorText = await response.text();
-        console.error('API Error response:', errorText);
-        throw new Error(`Failed to create todo: ${response.status}`);
+        throw new Error(`Failed to create todo: ${errorText}`);
       }
 
       const data = await response.json();
@@ -125,8 +117,7 @@ export const notionApi = {
 
       if (!response.ok) {
         const errorText = await response.text();
-        console.error('API Error response:', errorText);
-        throw new Error(`Failed to update todo: ${response.status}`);
+        throw new Error(`Failed to update todo: ${errorText}`);
       }
       return true;
     } catch (error) {
@@ -145,8 +136,7 @@ export const notionApi = {
 
       if (!response.ok) {
         const errorText = await response.text();
-        console.error('API Error response:', errorText);
-        throw new Error(`Failed to delete todo: ${response.status}`);
+        throw new Error(`Failed to delete todo: ${errorText}`);
       }
       return true;
     } catch (error) {

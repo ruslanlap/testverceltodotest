@@ -1,12 +1,18 @@
+
 // src/pages/api/notion/[[...path]].ts
 import { NextApiRequest, NextApiResponse } from 'next';
 
 const NOTION_API_BASE_URL = 'https://api.notion.com/v1';
-const NOTION_API_KEY = process.env.VITE_NOTION_API_KEY;
+const NOTION_API_KEY = process.env.NOTION_API_KEY;
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
+  if (!NOTION_API_KEY) {
+    res.status(500).json({ error: 'Notion API key not configured' });
+    return;
+  }
+
   // Set CORS headers
-  res.setHeader('Access-Control-Allow-Origin', 'https://doit-tau.vercel.app');
+  res.setHeader('Access-Control-Allow-Origin', process.env.NEXT_PUBLIC_APP_URL || 'https://doit-tau.vercel.app');
   res.setHeader('Access-Control-Allow-Methods', 'GET, POST, PATCH, DELETE, OPTIONS');
   res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization, Notion-Version');
   res.setHeader('Access-Control-Allow-Credentials', 'true');
@@ -19,7 +25,6 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
   try {
     const pathSegments = req.query.path || [];
     const apiPath = Array.isArray(pathSegments) ? pathSegments.join('/') : pathSegments;
-    console.log('API Path:', apiPath); // Debugging
 
     const notionResponse = await fetch(`${NOTION_API_BASE_URL}/${apiPath}`, {
       method: req.method,
@@ -31,11 +36,13 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       body: req.method !== 'GET' ? JSON.stringify(req.body) : undefined,
     });
 
-    console.log('Notion Response Status:', notionResponse.status); // Debugging
-
     if (!notionResponse.ok) {
       const errorText = await notionResponse.text();
-      console.error('Notion API Error:', errorText);
+      console.error('Notion API Error:', {
+        status: notionResponse.status,
+        text: errorText,
+        path: apiPath
+      });
       res.status(notionResponse.status).json({ error: errorText });
       return;
     }
@@ -50,8 +57,8 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
   } catch (error: unknown) {
     console.error('API Handler Error:', error);
     res.status(500).json({ 
-      error: 'Internal Server Error', 
-      details: error instanceof Error ? error.message : 'Unknown error' 
+      error: 'Internal Server Error',
+      details: error instanceof Error ? error.message : 'Unknown error'
     });
   }
 }
