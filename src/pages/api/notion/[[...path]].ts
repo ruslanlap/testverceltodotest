@@ -2,8 +2,7 @@
 import { NextApiRequest, NextApiResponse } from 'next';
 
 const NOTION_API_BASE_URL = 'https://api.notion.com/v1';
-const NOTION_API_KEY = process.env.NOTION_API_KEY; // Remove VITE_ prefix
-const NOTION_PAGE_ID = process.env.NOTION_PAGE_ID; // Remove VITE_ prefix
+const NOTION_API_KEY = process.env.NOTION_API_KEY;
 
 async function handleNotionRequest(req: NextApiRequest, res: NextApiResponse) {
   // Set CORS headers
@@ -59,9 +58,12 @@ async function handleNotionRequest(req: NextApiRequest, res: NextApiResponse) {
     } else {
       res.end();
     }
-  } catch (error) {
+  } catch (error: unknown) {
     console.error('API Handler Error:', error);
-    res.status(500).json({ error: 'Internal Server Error', details: error.message });
+    res.status(500).json({ 
+      error: 'Internal Server Error', 
+      details: error instanceof Error ? error.message : 'Unknown error' 
+    });
   }
 }
 

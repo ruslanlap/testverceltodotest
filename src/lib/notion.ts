@@ -1,85 +1,99 @@
-        // src/lib/notion.ts
-        const NOTION_API_URL = import.meta.env.PROD 
-          ? '/api/notion'  // Changed to relative path
-          : '/api/notion';
-
-        const headers = {
-          'Content-Type': 'application/json',
-        };
-
-        export const notionApi = {
-          async fetchTodos() {
-            try {
-              const response = await fetch(`${NOTION_API_URL}/blocks/${import.meta.env.VITE_NOTION_PAGE_ID}/children`, {
-                method: 'GET',
-                headers,
-                credentials: 'include'
-              });
-
-              if (!response.ok) {
-                const errorText = await response.text();
-                console.error('API Error response:', errorText);
-                throw new Error(`Failed to fetch todos: ${response.status}`);
-              }
-
-              const data = await response.json();
-              console.log('Fetched data:', data);
-
-              return data.results
-                .filter(block => block.type === 'to_do')
-                .map(block => ({
-                  id: block.id,
-                  text: block.to_do.rich_text[0]?.text?.content || '',
-                  completed: block.to_do.checked || false,
-                  createdAt: new Date(block.created_time).getTime(),
-                }));
-            } catch (error) {
-              console.error('Error in fetchTodos:', error);
-              throw error;
-            }
-          },
-
-        async createTodo(text: string) {
-          try {
-            const response = await fetch(`${NOTION_API_URL}/blocks/${YOUR_PAGE_ID}/children`, {
-              method: 'PATCH',
-              headers,
-              credentials: 'include',
-              body: JSON.stringify({
-                children: [{
-                  object: 'block',
-                  type: 'to_do',
-                  to_do: {
-                    rich_text: [{ 
-                      type: 'text',
-                      text: { content: text }
-                    }],
-                    checked: false
-                  }
-                }]
-              }),
-            });
-
-            if (!response.ok) {
-              const errorText = await response.text();
-              console.error('API Error response:', errorText);
-              throw new Error(`Failed to create todo: ${response.status}`);
-            }
-
-            const data = await response.json();
-            const newBlock = data.results[0];
-
-            return {
-              id: newBlock.id,
-              text,
-              completed: false,
-              createdAt: new Date(newBlock.created_time).getTime(),
+          // src/lib/notion.ts
+          interface NotionBlock {
+            id: string;
+            type: string;
+            to_do: {
+              rich_text: Array<{ text: { content: string } }>;
+              checked: boolean;
             };
-          } catch (error) {
-            console.error('Error creating todo:', error);
-            throw error;
+            created_time: string;
           }
-        },
+
+          interface NotionBlockResponse {
+            results: NotionBlock[];
+          }
+
+          const NOTION_API_URL = import.meta.env.PROD 
+            ? '/api/notion'
+            : '/api/notion';
+
+          const headers = {
+            'Content-Type': 'application/json',
+          };
+
+          export const notionApi = {
+            async fetchTodos() {
+              try {
+                const response = await fetch(`${NOTION_API_URL}/blocks/${import.meta.env.VITE_NOTION_PAGE_ID}/children`, {
+                  method: 'GET',
+                  headers,
+                  credentials: 'include'
+                });
+
+                if (!response.ok) {
+                  const errorText = await response.text();
+                  console.error('API Error response:', errorText);
+                  throw new Error(`Failed to fetch todos: ${response.status}`);
+                }
+
+                const data: NotionBlockResponse = await response.json();
+                console.log('Fetched data:', data);
+
+                return data.results
+                  .filter((block: NotionBlock) => block.type === 'to_do')
+                  .map((block: NotionBlock) => ({
+                    id: block.id,
+                    text: block.to_do.rich_text[0]?.text?.content || '',
+                    completed: block.to_do.checked || false,
+                    createdAt: new Date(block.created_time).getTime(),
+                  }));
+              } catch (error) {
+                console.error('Error in fetchTodos:', error);
+                throw error;
+              }
+            },
+
+            async createTodo(text: string) {
+              try {
+                const response = await fetch(`${NOTION_API_URL}/blocks/${import.meta.env.VITE_NOTION_PAGE_ID}/children`, {
+                  method: 'PATCH',
+                  headers,
+                  credentials: 'include',
+                  body: JSON.stringify({
+                    children: [{
+                      object: 'block',
+                      type: 'to_do',
+                      to_do: {
+                        rich_text: [{ 
+                          type: 'text',
+                          text: { content: text }
+                        }],
+                        checked: false
+                      }
+                    }]
+                  }),
+                });
+
+                if (!response.ok) {
+                  const errorText = await response.text();
+                  console.error('API Error response:', errorText);
+                  throw new Error(`Failed to create todo: ${response.status}`);
+                }
+
+                const data = await response.json();
+                const newBlock = data.results[0];
+
+                return {
+                  id: newBlock.id,
+                  text,
+                  completed: false,
+                  createdAt: new Date(newBlock.created_time).getTime(),
+                };
+              } catch (error) {
+                console.error('Error creating todo:', error);
+                throw error;
+              }
+            },
 
         async updateTodo(id: string, { text, completed }: { text?: string; completed?: boolean }) {
           try {
