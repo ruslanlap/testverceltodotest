@@ -12,12 +12,12 @@ export default async function handler(
   switch (method) {
     case 'GET':
       return await handleGet(req, res);
-    case 'PATCH':
+    case 'POST':
       return await handlePatch(req, res);
     case 'DELETE':
       return await handleDelete(req, res);
     default:
-      res.setHeader('Allow', ['GET', 'PATCH', 'DELETE']);
+      res.setHeader('Allow', ['GET', 'POST', 'DELETE']);
       res.status(405).end(`Method ${method} Not Allowed`);
   }
 }

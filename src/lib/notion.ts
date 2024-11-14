@@ -1,9 +1,12 @@
-//src/lib/notion.ts
-const NOTION_API_KEY = import.meta.env.VITE_NOTION_API_KEY;
+const NOTION_API_URL = process.env.NODE_ENV === 'production'
+  ? 'https://doapp-ten.vercel.app/api/notion'
+  : 'http://localhost:3000/api/notion';
 
-const YOUR_PAGE_ID = import.meta.env.VITE_YOUR_PAGE_ID;
-
-const NOTION_API_URL = 'https://doit-one-iota.vercel.app/api/notion';
+const headers = {
+  'Content-Type': 'application/json',
+  'Authorization': `Bearer ${process.env.NOTION_API_KEY}`,
+  'Notion-Version': '2022-06-28',
+};
 
 interface NotionBlock {
 
