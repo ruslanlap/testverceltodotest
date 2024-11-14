@@ -1,7 +1,4 @@
-// src/lib/notion.ts
-const NOTION_API_URL = import.meta.env;
-  ? 'https://doit-jl9nfjuul-ruslantodo.vercel.app'  // Ваш Vercel домен
-  : '/api/notion';
+const NOTION_API_URL = import?.meta?.env?.VITE_NOTION_API_URL ?? '/api/notion';
 
 interface NotionBlock {
   id: string;
