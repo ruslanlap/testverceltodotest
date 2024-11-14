@@ -1,9 +1,7 @@
 // src/lib/notion.ts
-const NOTION_API_URL = 'https://doit-tau.vercel.app/api/notion';
-const pageId = process.env.NEXT_PUBLIC_NOTION_PAGE_ID;
-if (!pageId) {
-  throw new Error('NEXT_PUBLIC_NOTION_PAGE_ID is not configured');
-}
+const NOTION_API_KEY = import.meta.env.VITE_NOTION_API_KEY;
+const YOUR_PAGE_ID = import.meta.env.VITE_YOUR_PAGE_ID;
+const NOTION_API_URL = '/api/notion';
 
 interface NotionBlock {
   id: string;
@@ -20,25 +18,29 @@ interface NotionBlockResponse {
 }
 
 const headers = {
+  'Authorization': `Bearer ${NOTION_API_KEY}`,
+  'Notion-Version': '2022-06-28',
   'Content-Type': 'application/json',
+  'Access-Control-Allow-Origin': '*',
 };
 
 export const notionApi = {
   async fetchTodos() {
     try {
-      const pageId = process.env.NEXT_PUBLIC_NOTION_PAGE_ID;
-      const response = await fetch(`${NOTION_API_URL}/blocks/${pageId}/children`, {
+      const response = await fetch(`${NOTION_API_URL}/blocks/${YOUR_PAGE_ID}/children`, {
         method: 'GET',
         headers,
-        credentials: 'include'
+        mode: 'cors'
       });
 
       if (!response.ok) {
-        const errorText = await response.text();
-        throw new Error(`Failed to fetch todos: ${errorText}`);
+        const errorData = await response.json();
+        throw new Error(errorData.message || 'Failed to fetch todos');
       }
 
       const data: NotionBlockResponse = await response.json();
+      console.log('Fetched data:', data);
+
       return data.results
         .filter(block => block.type === 'to_do')
         .map(block => ({
@@ -48,18 +50,17 @@ export const notionApi = {
           createdAt: new Date(block.created_time).getTime(),
         }));
     } catch (error) {
-      console.error('Error in fetchTodos:', error);
+      console.error('Error fetching todos:', error);
       throw error;
     }
   },
 
   async createTodo(text: string) {
     try {
-      const pageId = process.env.NEXT_PUBLIC_NOTION_PAGE_ID;
-      const response = await fetch(`${NOTION_API_URL}/blocks/${pageId}/children`, {
+      const response = await fetch(`${NOTION_API_URL}/blocks/${YOUR_PAGE_ID}/children`, {
         method: 'PATCH',
         headers,
-        credentials: 'include',
+        mode: 'cors',
         body: JSON.stringify({
           children: [{
             object: 'block',
@@ -76,8 +77,8 @@ export const notionApi = {
       });
 
       if (!response.ok) {
-        const errorText = await response.text();
-        throw new Error(`Failed to create todo: ${errorText}`);
+        const errorData = await response.json();
+        throw new Error(errorData.message || 'Failed to create todo');
       }
 
       const data = await response.json();
@@ -115,13 +116,13 @@ export const notionApi = {
       const response = await fetch(`${NOTION_API_URL}/blocks/${id}`, {
         method: 'PATCH',
         headers,
-        credentials: 'include',
+        mode: 'cors',
         body: JSON.stringify(updateData),
       });
 
       if (!response.ok) {
-        const errorText = await response.text();
-        throw new Error(`Failed to update todo: ${errorText}`);
+        const errorData = await response.json();
+        throw new Error(errorData.message || 'Failed to update todo');
       }
       return true;
     } catch (error) {
@@ -135,12 +136,12 @@ export const notionApi = {
       const response = await fetch(`${NOTION_API_URL}/blocks/${id}`, {
         method: 'DELETE',
         headers,
-        credentials: 'include',
+        mode: 'cors',
       });
 
       if (!response.ok) {
-        const errorText = await response.text();
-        throw new Error(`Failed to delete todo: ${errorText}`);
+        const errorData = await response.json();
+        throw new Error(errorData.message || 'Failed to delete todo');
       }
       return true;
     } catch (error) {

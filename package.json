@@ -1,11 +1,11 @@
 {
-  "name": "vite-react-typescript-starter",
+  "name": "notion-todos-backend",
   "private": true,
   "version": "0.0.0",
   "type": "module",
   "scripts": {
-    "dev": "vite",
-    "build": "tsc -b && vite build",
+    "dev": "node api/server.js",
+    "start": "node api/server.js"
     "lint": "eslint .",
     "preview": "vite preview"
   },
