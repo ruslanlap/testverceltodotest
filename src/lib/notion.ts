@@ -1,8 +1,6 @@
 // src/lib/notion.ts
 // Використовуємо абсолютний URL для продакшену
-const NOTION_API_URL = import.meta.env.PROD 
-  ? 'https://doit-tau.vercel.app/api/notion'  // Ваш Vercel домен
-  : '/api/notion';
+const NOTION_API_URL = '/api/notion';
 
 interface NotionBlock {
   id: string;
