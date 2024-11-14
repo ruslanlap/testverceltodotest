@@ -10,7 +10,7 @@ const corsMiddleware = cors({
   allowedHeaders: ["Content-Type", "Authorization", "Notion-Version"],
   credentials: true,
 });
-
+// function
 export default async function handler(req: VercelRequest, res: VercelResponse) {
   // Налаштування CORS
   res.setHeader("Access-Control-Allow-Origin", "*");
