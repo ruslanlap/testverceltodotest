@@ -13,7 +13,7 @@ function onRequest(preq, req) {
 }
 
 function onResponse(pres) {
-  pres.headers["Access-Control-Allow-Origin"] = "*"; // Замініть * на ваш домен для безпеки
+  pres.headers["Access-Control-Allow-Origin"] = "https://doapp-ten.vercel.app"; // Замініть * на ваш домен для безпеки
 }
 
 const proxy = createProxyMiddleware({
