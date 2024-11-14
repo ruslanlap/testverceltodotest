@@ -6,7 +6,6 @@ const NOTION_API_URL = process.env.NODE_ENV === 'production'
 
 const NOTION_API_KEY = process.env.NOTION_API_KEY;
 
-// Оголошуємо headers один раз
 const headers = {
   'Content-Type': 'application/json',
   'Authorization': `Bearer ${NOTION_API_KEY}`,
@@ -27,7 +26,44 @@ interface NotionBlockResponse {
   results: NotionBlock[];
 }
 
-// Експортуємо все необхідне
+// Додаємо API функції
+export const notionApi = {
+  async fetchTodos() {
+    const response = await fetch(`${NOTION_API_URL}/todos`, { headers });
+    if (!response.ok) throw new Error('Failed to fetch todos');
+    return response.json();
+  },
+
+  async createTodo(text: string) {
+    const response = await fetch(`${NOTION_API_URL}/todos`, {
+      method: 'POST',
+      headers,
+      body: JSON.stringify({ text }),
+    });
+    if (!response.ok) throw new Error('Failed to create todo');
+    return response.json();
+  },
+
+  async updateTodo(id: string, updates: { completed?: boolean; text?: string }) {
+    const response = await fetch(`${NOTION_API_URL}/todos/${id}`, {
+      method: 'PATCH',
+      headers,
+      body: JSON.stringify(updates),
+    });
+    if (!response.ok) throw new Error('Failed to update todo');
+    return response.json();
+  },
+
+  async deleteTodo(id: string) {
+    const response = await fetch(`${NOTION_API_URL}/todos/${id}`, {
+      method: 'DELETE',
+      headers,
+    });
+    if (!response.ok) throw new Error('Failed to delete todo');
+    return response.json();
+  }
+};
+
 export {
   NOTION_API_URL,
   headers,
