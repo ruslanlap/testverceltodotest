@@ -1,11 +1,20 @@
+// api/notion/blocks/[...path].ts
 import { VercelRequest, VercelResponse } from '@vercel/node';
-
+import cors from 'cors';
 const NOTION_API_BASE = 'https://api.notion.com/v1';
 const NOTION_API_KEY = process.env.VITE_NOTION_API_KEY;
 
+const corsMiddleware = cors({
+  origin: 'https://doit-tau.vercel.app',
+  methods: ['GET', 'POST', 'PATCH', 'DELETE', 'OPTIONS'],
+  allowedHeaders: ['Content-Type', 'Authorization', 'Notion-Version'],
+  credentials: true,
+});
+
+
 export default async function handler(req: VercelRequest, res: VercelResponse) {
   // Налаштування CORS
-  res.setHeader('Access-Control-Allow-Origin', 'https://doit-tau.vercel.app');
+  res.setHeader('Access-Control-Allow-Origin', 'https://doit-tau.vercel.app/');
   res.setHeader('Access-Control-Allow-Methods', 'GET, POST, PATCH, DELETE, OPTIONS');
   res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization, Notion-Version');
   res.setHeader('Access-Control-Allow-Credentials', 'true');
