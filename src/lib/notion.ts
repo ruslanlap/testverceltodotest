@@ -22,7 +22,7 @@ interface NotionBlock {
 
 export const notionApi = {
   async fetchTodos() {
-    const response = await fetch(`${NOTION_API_URL}/todos`, { headers });
+    const response = await fetch(`${NOTION_API_URL}/blocks/${YOUR_PAGE_ID}/children/todos`, { headers });
     if (!response.ok) throw new Error('Failed to fetch todos');
     return response.json();
   },
