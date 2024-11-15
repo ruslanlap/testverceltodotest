@@ -1,5 +1,5 @@
 const NOTION_API_URL = process.env.NODE_ENV === 'production'
-  ? 'https://doapp-ten.vercel.app//api/notion'
+  ? 'https://doapp-ten.vercel.app'
   : 'http://localhost:3000/api/notion';
 
 const headers = {

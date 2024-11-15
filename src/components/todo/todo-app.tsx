@@ -87,15 +87,15 @@ export default function TodoApp() {
   // Function to fetch todos from the Notion API
   const fetchTodos = async () => {
     try {
-      setIsLoading(true); // Show loading spinner
+      setIsLoading(true);
       const notionTodos = await notionApi.fetchTodos();
-      setTodos(notionTodos); // Update the todo list
-      setLastUpdate(new Date()); // Record the time of the last update
-      toast.success("Todos synced with Notion"); // Show success message
+      setTodos(notionTodos);
+      setLastUpdate(new Date());
+      toast.success("Todos synced with Notion");
     } catch (error) {
-      toast.error("Failed to fetch todos from Notion"); // Show error message if fetch fails
+      toast.error("Failed to fetch todos from Notion");
     } finally {
-      setIsLoading(false); // Hide loading spinner
+      setIsLoading(false);
     }
   };
 
