@@ -1,5 +1,5 @@
 const corsOptions = {
-  origin: ['https://doit-tau.vercel.app', 'http://localhost:3000'],
+  origin: ['https://doapp-ten.vercel.app/', 'http://localhost:3000'],
   methods: ['GET', 'POST', 'PATCH', 'DELETE', 'OPTIONS'],
   allowedHeaders: ['Content-Type', 'Authorization', 'Notion-Version'],
   credentials: true,
