@@ -20,7 +20,7 @@ export default defineConfig({
     server: {
         proxy: {
             '/api/notion': {
-                target: 'https://api.notion.com/v1',
+                target: 'https://doit-tau.vercel.app', // Замініть на ваш URL API Notion
                 changeOrigin: true,
                 rewrite: function (path) { return path.replace(/^\/api\/notion/, ''); },
                 headers: {

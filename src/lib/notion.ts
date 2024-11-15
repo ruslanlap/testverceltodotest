@@ -1,17 +1,12 @@
-// src/lib/notion.ts
-
 const NOTION_API_URL = process.env.NODE_ENV === 'production'
   ? 'https://doit-tau.vercel.app/api/notion'
   : 'http://localhost:3000/api/notion';
 
-const NOTION_API_KEY = process.env.NOTION_API_KEY;
-
 const headers = {
   'Content-Type': 'application/json',
-  'Authorization': `Bearer ${NOTION_API_KEY}`,
+  'Authorization': `Bearer ${process.env.NOTION_API_KEY}`,
   'Notion-Version': '2022-06-28'
 };
-
 
 interface NotionBlock {
   id: string;
@@ -23,11 +18,6 @@ interface NotionBlock {
   created_time: string;
 }
 
-interface NotionBlockResponse {
-  results: NotionBlock[];
-}
-
-// Додаємо API функції
 export const notionApi = {
   async fetchTodos() {
     const response = await fetch(`${NOTION_API_URL}/todos`, { headers });
@@ -45,7 +35,7 @@ export const notionApi = {
     return response.json();
   },
 
-  async updateTodo(id: string, updates: { completed?: boolean; text?: string }) {
+  async updateTodo(id: string, updates: { checked?: boolean; text?: string }) {
     const response = await fetch(`${NOTION_API_URL}/todos/${id}`, {
       method: 'PATCH',
       headers,
@@ -63,11 +53,4 @@ export const notionApi = {
     if (!response.ok) throw new Error('Failed to delete todo');
     return response.json();
   }
-};
-
-export {
-  NOTION_API_URL,
-  headers,
-  type NotionBlock,
-  type NotionBlockResponse
 };
