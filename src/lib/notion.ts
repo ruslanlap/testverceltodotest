@@ -2,9 +2,11 @@ const NOTION_API_URL = process.env.NODE_ENV === 'production'
   ? 'https://doapp-ten.vercel.app'
   : 'http://localhost:3000/api/notion';
 
+const NOTION_API_KEY = process.env.NOTION_API_KEY;
+
 const headers = {
   'Content-Type': 'application/json',
-  'Authorization': `Bearer ${process.env.NOTION_API_KEY}`,
+  'Authorization': `Bearer ${NOTION_API_KEY}`,
   'Notion-Version': '2022-06-28'
 };
 
