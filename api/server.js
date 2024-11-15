@@ -1,3 +1,4 @@
+// api/server.js
 import { Client } from '@notionhq/client';
 import 'dotenv/config';
 import express from 'express';
